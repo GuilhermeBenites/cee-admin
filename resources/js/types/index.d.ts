@@ -36,19 +36,28 @@ export interface SharedData {
 
 export type Transaction = {
     id: number;
-    type: 'income' | 'expense';
-    source_destination: string;
-    description: string;
-    amount: number;
+    total_amount: number;
     transaction_date: string;
     payment_method: string;
     user_id: number;
-    member_id: number | null;
-    reference_months: string | null;
-    vehicle_type: string | null;
+    description: string | null;
     created_at: string;
     updated_at: string;
+    deleted_at?: string | null;
     user: User;
+    items?: TransactionItem[];
+};
+
+export type TransactionItem = {
+    id: number;
+    transaction_id: number;
+    category_id: number;
+    item_amount: number;
+    item_description: string | null;
+    member_id: number | null;
+    reference_months: string | null;
+    created_at: string;
+    updated_at: string;
 };
 
 export type PaginatedResponse<T> = {

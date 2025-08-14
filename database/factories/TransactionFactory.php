@@ -30,7 +30,6 @@ class TransactionFactory extends Factory
             'user_id' => User::factory(),
             'member_id' => null,
             'reference_months' => fake()->optional()->monthName().'/'.fake()->year(),
-            'vehicle_type' => fake()->optional()->randomElement(['car', 'motorcycle']),
         ];
     }
 }

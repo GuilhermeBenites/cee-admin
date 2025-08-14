@@ -25,9 +25,19 @@ interface DataTableProps<T> {
     columns: ColumnDef<T>[];
     createText?: string;
     createAction?: () => void;
+    // Optional: id of the column to filter and input placeholder text
+    filterColumnId?: string;
+    filterPlaceholder?: string;
 }
 
-export function DataTable<T>({ data, columns, createText = 'Create', createAction }: DataTableProps<T>) {
+export function DataTable<T>({
+    data,
+    columns,
+    createText = 'Create',
+    createAction,
+    filterColumnId,
+    filterPlaceholder = 'Filtrar...',
+}: DataTableProps<T>) {
     const [sorting, setSorting] = React.useState<SortingState>([]);
     const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
     const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
@@ -55,12 +65,14 @@ export function DataTable<T>({ data, columns, createText = 'Create', createActio
     return (
         <div className="w-full">
             <div className="flex items-center py-4">
-                <Input
-                    placeholder="Filtrar por nome..."
-                    value={(table.getColumn('name')?.getFilterValue() as string) ?? ''}
-                    onChange={(event) => table.getColumn('name')?.setFilterValue(event.target.value)}
-                    className="max-w-sm"
-                />
+                {filterColumnId && (
+                    <Input
+                        placeholder={filterPlaceholder}
+                        value={(table.getColumn(filterColumnId)?.getFilterValue() as string) ?? ''}
+                        onChange={(event) => table.getColumn(filterColumnId)?.setFilterValue(event.target.value)}
+                        className="max-w-sm"
+                    />
+                )}
                 <div className="ml-auto flex items-center gap-2">
                     {createAction && (
                         <Button variant="success" onClick={createAction}>

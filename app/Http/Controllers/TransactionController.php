@@ -4,7 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreTransactionRequest;
 use App\Http\Requests\UpdateTransactionRequest;
+use App\Models\Category;
+use App\Models\Member;
 use App\Models\Transaction;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
 class TransactionController extends Controller
@@ -16,6 +19,8 @@ class TransactionController extends Controller
     {
         return Inertia::render('transactions/index', [
             'transactions' => Transaction::with('user')->latest()->paginate(15),
+            'categories' => Category::orderBy('name')->get(['id', 'name', 'type']),
+            'members' => Member::orderBy('name')->get(['id', 'name']),
         ]);
     }
 
@@ -32,7 +37,21 @@ class TransactionController extends Controller
      */
     public function store(StoreTransactionRequest $request)
     {
-        //
+        $validated = $request->validated();
+
+        DB::transaction(function () use ($validated) {
+            $transaction = Transaction::create([
+                'total_amount' => collect($validated['items'])->sum(fn ($i) => $i['item_amount']),
+                'transaction_date' => $validated['transaction_date'],
+                'payment_method' => $validated['payment_method'],
+                'user_id' => auth()->id(),
+                'description' => $validated['description'] ?? null,
+            ]);
+
+            $transaction->items()->createMany($validated['items']);
+        });
+
+        return redirect()->route('transactions.index');
     }
 
     /**
@@ -40,7 +59,13 @@ class TransactionController extends Controller
      */
     public function show(Transaction $transaction)
     {
-        //
+        $transaction->load(['user', 'items']);
+        if (request()->wantsJson()) {
+            return response()->json($transaction);
+        }
+        return Inertia::render('transactions/show', [
+            'transaction' => $transaction,
+        ]);
     }
 
     /**
@@ -56,7 +81,21 @@ class TransactionController extends Controller
      */
     public function update(UpdateTransactionRequest $request, Transaction $transaction)
     {
-        //
+        $validated = $request->validated();
+
+        DB::transaction(function () use ($transaction, $validated) {
+            $transaction->update([
+                'total_amount' => collect($validated['items'])->sum(fn ($i) => $i['item_amount']),
+                'transaction_date' => $validated['transaction_date'],
+                'payment_method' => $validated['payment_method'],
+                'description' => $validated['description'] ?? null,
+            ]);
+
+            $transaction->items()->delete();
+            $transaction->items()->createMany($validated['items']);
+        });
+
+        return redirect()->route('transactions.index');
     }
 
     /**
@@ -64,6 +103,7 @@ class TransactionController extends Controller
      */
     public function destroy(Transaction $transaction)
     {
-        //
+        $transaction->delete();
+        return redirect()->route('transactions.index');
     }
 }

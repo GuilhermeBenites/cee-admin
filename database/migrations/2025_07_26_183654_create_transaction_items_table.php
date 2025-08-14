@@ -21,7 +21,6 @@ return new class extends Migration
 
             $table->foreignId('member_id')->nullable()->constrained('members')->onDelete('set null');
             $table->string('reference_months')->nullable();
-            $table->string('vehicle_type')->nullable();
 
             $table->timestamps();
             $table->softDeletes();

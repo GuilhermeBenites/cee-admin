@@ -14,7 +14,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         return Inertia::render('dashboard');
     })->name('dashboard');
 
-    Route::get('balcony', [TransactionController::class, 'index'])->name('transactions.index');
+    Route::get('transactions', [TransactionController::class, 'index'])->name('transactions.index');
+    Route::get('transactions/{transaction}', [TransactionController::class, 'show'])->name('transactions.show');
+    Route::post('transactions', [TransactionController::class, 'store'])->name('transactions.store');
+    Route::put('transactions/{transaction}', [TransactionController::class, 'update'])->name('transactions.update');
+    Route::delete('transactions/{transaction}', [TransactionController::class, 'destroy'])->name('transactions.destroy');
 
     Route::get('members', [MemberController::class, 'index'])->name('members.index');
     Route::post('members', [MemberController::class, 'store'])->name('members.store');

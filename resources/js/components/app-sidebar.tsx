@@ -14,7 +14,7 @@ const mainNavItems: NavItem[] = [
     },
     {
         title: 'Balcão',
-        href: '/balcony',
+        href: '/transactions',
         icon: Receipt,
     },
     {

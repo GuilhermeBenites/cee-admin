@@ -108,7 +108,14 @@ export default function Index({ members }: { members: PaginatedResponse<Member> 
             />
             <Head title="Membros" />
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
-                <DataTable data={members.data} columns={columns} createText="Novo membro" createAction={() => handleCreate()} />
+                <DataTable
+                    data={members.data}
+                    columns={columns}
+                    createText="Novo membro"
+                    createAction={() => handleCreate()}
+                    filterColumnId="name"
+                    filterPlaceholder="Filtrar por nome..."
+                />
             </div>
         </AppLayout>
     );
