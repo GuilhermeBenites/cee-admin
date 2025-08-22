@@ -1,3 +1,4 @@
+import axios from '@/lib/axios';
 import '../css/app.css';
 
 import { createInertiaApp } from '@inertiajs/react';
@@ -8,10 +9,15 @@ import { initializeTheme } from './hooks/use-appearance';
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
 createInertiaApp({
-    title: (title) => title ? `${title} - ${appName}` : appName,
+    title: (title) => (title ? `${title} - ${appName}` : appName),
     resolve: (name) => resolvePageComponent(`./pages/${name}.tsx`, import.meta.glob('./pages/**/*.tsx')),
     setup({ el, App, props }) {
         const root = createRoot(el);
+        const token = (props.initialPage.props as { api_token: string }).api_token;
+
+        if (token) {
+            axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        }
 
         root.render(<App {...props} />);
     },

@@ -25,6 +25,7 @@ class StoreTransactionRequest extends FormRequest
             'transaction_date' => ['required', 'date'],
             'payment_method' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
+            'client_id' => ['required', 'integer', 'exists:clients,id'],
             'items' => ['required', 'array', 'min:1'],
             'items.*.category_id' => ['required', 'integer', 'exists:categories,id'],
             'items.*.item_amount' => ['required', 'numeric', 'min:0.01'],

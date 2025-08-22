@@ -4,9 +4,10 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Plus, Trash2 } from 'lucide-react';
-import { useMemo } from 'react';
+import { useEffect } from 'react';
 import { Controller, useFieldArray, useForm, type Resolver, type SubmitHandler } from 'react-hook-form';
 import { z } from 'zod';
+import { ClientCombobox } from './client-combobox';
 
 type Category = {
     id: number;
@@ -26,6 +27,7 @@ export const transactionSchema = z.object({
     transaction_date: z.string().min(1, 'Data é obrigatória'),
     payment_method: z.string().min(1, 'Forma de pagamento é obrigatória'),
     description: z.string().optional().nullable(),
+    client_id: z.coerce.number().int().positive('Cliente é obrigatório'),
     items: z.array(transactionItemSchema).min(1, 'Adicione pelo menos 1 item'),
 });
 
@@ -39,9 +41,10 @@ interface TransactionFormProps {
     defaultValues?: Partial<TransactionSchema>;
     categories: Category[];
     members: MemberLite[];
+    onTotalChange: (total: number) => void;
 }
 
-export function TransactionForm({ id, onSubmit, defaultValues, categories, members }: TransactionFormProps) {
+export function TransactionForm({ id, onSubmit, defaultValues, categories, members, onTotalChange }: TransactionFormProps) {
     function formatLocalDate(date: Date): string {
         const year = date.getFullYear();
         const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -78,15 +81,31 @@ export function TransactionForm({ id, onSubmit, defaultValues, categories, membe
     const { fields, append, remove } = useFieldArray({ control, name: 'items' });
 
     const items = watch('items');
-    const total = useMemo(() => items?.reduce((sum, item) => sum + (Number(item.item_amount) || 0), 0) || 0, [items]);
+
+    useEffect(() => {
+        const subscription = watch((value) => {
+            const total = value.items?.reduce((sum, item) => sum + (Number(item?.item_amount) || 0), 0) || 0;
+            onTotalChange(total);
+        });
+        return () => subscription.unsubscribe();
+    }, [watch, onTotalChange]);
 
     return (
-        <form id={id} onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        <form id={id} onSubmit={handleSubmit(onSubmit)} className="space-y-6 px-8 py-6">
             <div className="flex flex-col gap-4 md:flex-row">
                 <div className="flex flex-col gap-2">
                     <Label htmlFor="transaction_date">Data</Label>
                     <Input id="transaction_date" type="date" {...register('transaction_date')} className="w-fit" />
                     {errors.transaction_date && <p className="text-xs text-red-500">{errors.transaction_date.message}</p>}
+                </div>
+                <div className="flex min-w-52 flex-col gap-2">
+                    <Label htmlFor="client_id">Cliente</Label>
+                    <Controller
+                        control={control}
+                        name="client_id"
+                        render={({ field }) => <ClientCombobox value={field.value} onChange={field.onChange} />}
+                    />
+                    {errors.client_id && <p className="text-xs text-red-500">{errors.client_id.message}</p>}
                 </div>
                 <div className="flex min-w-52 flex-col gap-2">
                     <Label htmlFor="payment_method">Forma de pagamento</Label>
@@ -248,13 +267,6 @@ export function TransactionForm({ id, onSubmit, defaultValues, categories, membe
                     })}
                     {typeof errors.items?.message === 'string' && <p className="text-xs text-red-500">{errors.items?.message}</p>}
                 </div>
-            </div>
-
-            <div className="flex items-center justify-end gap-4 text-sm">
-                <span className="text-muted-foreground">Total</span>
-                <span className="text-base font-semibold">
-                    {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(total)}
-                </span>
             </div>
         </form>
     );

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreTransactionRequest;
 use App\Http\Requests\UpdateTransactionRequest;
 use App\Models\Category;
+use App\Models\Client;
 use App\Models\Member;
 use App\Models\Transaction;
 use Illuminate\Support\Facades\DB;
@@ -18,9 +19,10 @@ class TransactionController extends Controller
     public function index()
     {
         return Inertia::render('transactions/index', [
-            'transactions' => Transaction::with('user')->latest()->paginate(15),
+            'transactions' => Transaction::with('user', 'client')->latest()->paginate(15),
             'categories' => Category::orderBy('name')->get(['id', 'name', 'type']),
             'members' => Member::orderBy('name')->get(['id', 'name']),
+            'clients' => Client::orderBy('name')->get(['id', 'name']),
         ]);
     }
 
@@ -46,6 +48,7 @@ class TransactionController extends Controller
                 'payment_method' => $validated['payment_method'],
                 'user_id' => auth()->id(),
                 'description' => $validated['description'] ?? null,
+                'client_id' => $validated['client_id'],
             ]);
 
             $transaction->items()->createMany($validated['items']);
@@ -89,6 +92,7 @@ class TransactionController extends Controller
                 'transaction_date' => $validated['transaction_date'],
                 'payment_method' => $validated['payment_method'],
                 'description' => $validated['description'] ?? null,
+                'client_id' => $validated['client_id'],
             ]);
 
             $transaction->items()->delete();

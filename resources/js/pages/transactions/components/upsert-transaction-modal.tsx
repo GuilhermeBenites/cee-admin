@@ -24,6 +24,7 @@ interface UpsertTransactionModalProps {
 export function UpsertTransactionModal({ transaction, open, setOpen, categories, members }: UpsertTransactionModalProps) {
     const formId = useId();
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [total, setTotal] = useState(0);
 
     const onSubmit = (values: TransactionSchema) => {
         const url = transaction ? route('transactions.update', transaction.id) : route('transactions.store');
@@ -90,21 +91,36 @@ export function UpsertTransactionModal({ transaction, open, setOpen, categories,
 
     return (
         <Dialog open={open} onOpenChange={handleOpenChange}>
-            <DialogContent className="!max-w-5xl">
-                <DialogHeader>
+            <DialogContent className="!max-w-5xl !p-0">
+                <DialogHeader className="px-8 pt-6">
                     <DialogTitle>{transaction ? 'Editar' : 'Nova'} transação</DialogTitle>
                     <DialogDescription>Preencha os campos obrigatórios e adicione itens facilmente.</DialogDescription>
                 </DialogHeader>
 
-                <TransactionForm id={formId} onSubmit={onSubmit} defaultValues={defaultValues} categories={categories} members={members} />
+                <TransactionForm
+                    id={formId}
+                    onSubmit={onSubmit}
+                    defaultValues={defaultValues}
+                    categories={categories}
+                    members={members}
+                    onTotalChange={setTotal}
+                />
 
-                <DialogFooter>
-                    <Button variant="outline" onClick={() => handleOpenChange(false)}>
-                        Cancelar
-                    </Button>
-                    <Button type="submit" form={formId} disabled={isSubmitting}>
-                        {isSubmitting ? 'Salvando...' : 'Salvar'}
-                    </Button>
+                <DialogFooter className="flex items-center justify-between rounded-b-2xl border-t border-gray-200 bg-gray-50 px-8 py-6 sm:items-center sm:justify-between">
+                    <div className="flex flex-col">
+                        <span className="text-sm text-gray-600">Total</span>
+                        <span className="text-2xl font-bold text-gray-900">
+                            {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(total)}
+                        </span>
+                    </div>
+                    <div className="flex flex-col-reverse gap-2 sm:flex-row sm:gap-2">
+                        <Button variant="outline" onClick={() => handleOpenChange(false)}>
+                            Cancelar
+                        </Button>
+                        <Button type="submit" form={formId} disabled={isSubmitting}>
+                            {isSubmitting ? 'Salvando...' : 'Salvar'}
+                        </Button>
+                    </div>
                 </DialogFooter>
             </DialogContent>
         </Dialog>

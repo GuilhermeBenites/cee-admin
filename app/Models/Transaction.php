@@ -18,6 +18,7 @@ class Transaction extends Model
         'payment_method',
         'user_id',
         'description',
+        'client_id',
     ];
 
     protected $casts = [
@@ -33,5 +34,10 @@ class Transaction extends Model
     public function items()
     {
         return $this->hasMany(TransactionItem::class);
+    }
+
+    public function client()
+    {
+        return $this->belongsTo(Client::class);
     }
 }

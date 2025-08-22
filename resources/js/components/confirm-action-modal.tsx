@@ -20,10 +20,10 @@ export function ConfirmActionModal({ isOpen, onClose, onConfirm, title, descript
                 </DialogHeader>
                 <DialogFooter className="sm:justify-end">
                     <Button type="button" variant="secondary" onClick={onClose}>
-                        Cancel
+                        Cancelar
                     </Button>
                     <Button type="button" variant="destructive" onClick={onConfirm} disabled={isPending}>
-                        {isPending ? 'Confirming...' : 'Confirm'}
+                        {isPending ? 'Confirmando...' : 'Confirmar'}
                     </Button>
                 </DialogFooter>
             </DialogContent>
