@@ -12,11 +12,9 @@ import {
     useReactTable,
     VisibilityState,
 } from '@tanstack/react-table';
-import { ChevronDown } from 'lucide-react';
 import * as React from 'react';
 
 import { Button } from '@/components/ui/button';
-import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
@@ -25,9 +23,10 @@ interface DataTableProps<T> {
     columns: ColumnDef<T>[];
     createText?: string;
     createAction?: () => void;
-    // Optional: id of the column to filter and input placeholder text
     filterColumnId?: string;
     filterPlaceholder?: string;
+    dateFilterValue?: string;
+    onDateFilterChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
 export function DataTable<T>({
@@ -37,6 +36,8 @@ export function DataTable<T>({
     createAction,
     filterColumnId,
     filterPlaceholder = 'Filtrar...',
+    dateFilterValue,
+    onDateFilterChange,
 }: DataTableProps<T>) {
     const [sorting, setSorting] = React.useState<SortingState>([]);
     const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
@@ -64,46 +65,19 @@ export function DataTable<T>({
 
     return (
         <div className="w-full">
-            <div className="flex items-center py-4">
-                {filterColumnId && (
-                    <Input
-                        placeholder={filterPlaceholder}
-                        value={(table.getColumn(filterColumnId)?.getFilterValue() as string) ?? ''}
-                        onChange={(event) => table.getColumn(filterColumnId)?.setFilterValue(event.target.value)}
-                        className="max-w-sm"
-                    />
-                )}
-                <div className="ml-auto flex items-center gap-2">
-                    {createAction && (
-                        <Button variant="success" onClick={createAction}>
-                            {createText}
-                        </Button>
+            <div className="flex items-center justify-between py-4">
+                <div className="flex items-center gap-2">
+                    {filterColumnId && (
+                        <Input
+                            placeholder={filterPlaceholder}
+                            value={(table.getColumn(filterColumnId)?.getFilterValue() as string) ?? ''}
+                            onChange={(event) => table.getColumn(filterColumnId)?.setFilterValue(event.target.value)}
+                            className="max-w-sm"
+                        />
                     )}
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="outline" className="ml-auto">
-                                Colunas <ChevronDown />
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                            {table
-                                .getAllColumns()
-                                .filter((column) => column.getCanHide())
-                                .map((column) => {
-                                    return (
-                                        <DropdownMenuCheckboxItem
-                                            key={column.id}
-                                            className="capitalize"
-                                            checked={column.getIsVisible()}
-                                            onCheckedChange={(value) => column.toggleVisibility(!!value)}
-                                        >
-                                            {column.id}
-                                        </DropdownMenuCheckboxItem>
-                                    );
-                                })}
-                        </DropdownMenuContent>
-                    </DropdownMenu>
+                    {onDateFilterChange && <Input type="date" value={dateFilterValue ?? ''} onChange={onDateFilterChange} className="max-w-sm" />}
                 </div>
+                {createAction && <Button onClick={() => createAction()}>{createText}</Button>}
             </div>
             <div className="overflow-hidden rounded-md border">
                 <Table>

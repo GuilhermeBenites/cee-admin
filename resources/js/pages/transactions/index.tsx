@@ -6,7 +6,7 @@ import { useConfirmAction } from '@/hooks/use-confirm-action';
 import AppLayout from '@/layouts/app-layout';
 import { formatDate } from '@/lib/utils';
 import { PaginatedResponse, type BreadcrumbItem, type Transaction } from '@/types';
-import { Head, useForm } from '@inertiajs/react';
+import { Head, router, useForm } from '@inertiajs/react';
 import { ColumnDef } from '@tanstack/react-table';
 import { MoreHorizontal } from 'lucide-react';
 import { useState } from 'react';
@@ -26,10 +26,12 @@ export default function Index({
     transactions,
     categories = [],
     members = [],
+    filters,
 }: {
     transactions: PaginatedResponse<Transaction>;
     categories?: Category[];
     members?: MemberLite[];
+    filters: { date?: string };
 }) {
     const { processing, delete: destroy } = useForm();
     const { isModalOpen, openModal, closeModal, confirm } = useConfirmAction();
@@ -44,6 +46,18 @@ export default function Index({
     function handleEdit(transaction: Transaction) {
         setEditing(transaction);
         setIsUpsertOpen(true);
+    }
+
+    function handleDateChange(e: React.ChangeEvent<HTMLInputElement>) {
+        const newDate = e.target.value;
+        router.get(
+            route('transactions.index'),
+            { date: newDate || undefined }, // Send undefined to clear filter
+            {
+                preserveState: true,
+                replace: true,
+            },
+        );
     }
 
     const columns: ColumnDef<Transaction>[] = [
@@ -132,6 +146,8 @@ export default function Index({
                     createAction={() => handleCreate()}
                     filterColumnId="userName"
                     filterPlaceholder="Filtrar por cliente..."
+                    dateFilterValue={filters.date}
+                    onDateFilterChange={handleDateChange}
                 />
             </div>
         </AppLayout>

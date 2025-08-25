@@ -1,71 +1,92 @@
 ---
-description: Rules
-globs:
+description: Rules for the CEE Admin project
+globs: ['**/*']
 alwaysApply: true
 ---
 
-## 1. General Project Organization (Laravel + React + Inertia)
+## 1. Core Principles
 
-- Follow the standard Laravel architecture, keeping controllers lean and delegating business logic to Services or Actions.
-- Use **Eloquent Resources** to format data sent to the frontend.
-- Avoid business logic in Controllers or Inertia Views.
-- Standardize controller names in singular form + `Controller` (e.g., `UserController`).
-- Use `Route::resource` or `Route::controller` whenever possible for consistency.
+This project follows specific architectural and structural guidelines to ensure code quality, maintainability, and consistency. All generated code must adhere to these rules.
 
----
+For a detailed overview of the project's architecture, refer to the main documentation file:
 
-## 2. React with Inertia.js Standards
-
-- Use **functional components** with React Hooks.
-- Organize components into:
-    - `resources/js/Pages` for pages
-    - `resources/js/Components` for reusable components
-- Avoid overly large components — split into reusable subcomponents.
-- Prefer **TailwindCSS** or **CSS Modules** for styling.
-- Use **shadcn/ui** for ready-to-use accessible UI components with consistent design.
-- Use `@inertiajs/react` for navigation and forms, avoiding `window.location` or `<a>` outside of Inertia's Link.
+- **Primary Documentation**: `docs/CODE_STRUCTURE.md`
 
 ---
 
-## 3. JavaScript/TypeScript Best Practices on Frontend
+## 2. Backend (Laravel)
 
-- Use **TypeScript** whenever possible for type safety.
-- Avoid using `any` — prefer explicit types or typed generics.
-- Use **destructuring** for props and variables.
-- Create **reusable hooks** for state logic to avoid code duplication.
-- Keep imports organized: libraries first, then internal files.
-- Use **react-hook-form** for form state management.
-- Validate forms using **zod** schemas integrated with react-hook-form.
-- Use **zustand** for global state management when shared state is required across components.
+The backend follows a clean architecture pattern, separating concerns into distinct layers.
 
----
+### Business Logic
 
-## 4. Laravel ↔ React Integration via Inertia
+- **Controllers must be lean.** They should only be responsible for handling HTTP requests and returning responses.
+- **Business logic must be delegated to `Service` classes.** Complex database queries can be abstracted into `Repository` classes.
+- **AVOID placing business logic in controllers or models.** See `docs/CODE_STRUCTURE.md` for correct examples.
 
-- Always return data to Inertia via `Inertia::render` with compact data (using **Resources** when needed).
-- Avoid sending unpaginated queries for large tables.
-- For forms:
-    - Use Inertia's `useForm` on the frontend when not using react-hook-form
-    - Use `react-hook-form` with zod validation for advanced forms
-    - Use `FormRequest` on the backend
-- Keep backend validations consistent and centralized.
+### Validation
+
+- **Always use `FormRequest` classes** for validation. This keeps validation logic separate from the controller.
+- Reference: `docs/CODE_STRUCTURE.md`.
+
+### Database
+
+- The database schema is defined and documented. Before creating or modifying migrations, refer to `docs/database.md`.
+- Use **migrations, seeders, and factories** for database management.
 
 ---
 
-## 5. Laravel Code Best Practices
+## 3. Frontend (React + TypeScript)
 
-- Use **migrations**, **seeders**, and **factories** for data management.
-- Use **mass assignment** protection (`$fillable`) or DTOs when creating records.
-- Avoid queries in Blade or React Views — always retrieve data from the controller.
-- Use **caching** for static or heavy data.
-- Create **automated tests** for main routes and features.
+The frontend is built with React, TypeScript, and Inertia.js, emphasizing a clear separation of concerns.
+
+### Component & Page Structure
+
+- **Pages**: `resources/js/pages` - Represent application screens.
+- **Reusable Components**: `resources/js/components` - UI-only components with no business logic.
+- **Forms**: `resources/js/forms` - Contains form schemas and logic.
+- **Global State**: `resources/js/stores` - For global state management using Zustand.
+- For more details, see `docs/CODE_STRUCTURE.md`.
+
+### State Management & Forms
+
+- Use **Zustand** for global state management.
+- Use **react-hook-form** with **Zod** for all forms to ensure robust validation and state handling.
+
+### Styling
+
+- **shadcn/ui** is the primary component library. Use its components whenever possible for UI consistency.
+- Styling is done via **TailwindCSS**.
 
 ---
 
-## 6. Code Standardization
+## 4. User Flows & Features
 
-- Follow **PSR-12** for PHP.
-- Follow **ESLint + Prettier** for JavaScript/TypeScript.
-- Use English names for classes, methods, variables, and files.
-- Avoid generic names like `data`, `info` — prefer descriptive names.
-- Document complex functions with clear comments.
+When implementing new features or modifying existing ones, it's crucial to understand the defined user flows. This ensures the implementation aligns with the application's intended behavior.
+
+- **Refer to `docs/user-flows.md`** to understand the main application flows, such as sales registration and user management.
+
+---
+
+## 5. Testing
+
+The project has a clear testing strategy for both backend and frontend.
+
+- **Backend (Pest)**:
+    - **Feature Tests**: For routes, validation, and controller logic.
+    - **Unit Tests**: For `Service` classes in isolation.
+    - **E2E Tests**: Use **Pest + Playwright** to simulate user flows.
+- **Frontend (React)**:
+    - **Component Tests**: Use **React Testing Library** for UI component testing.
+
+Refer to the "Tests" section in `docs/CODE_STRUCTURE.md` for more details.
+
+---
+
+## 6. General Coding Standards
+
+- **Code Style**:
+    - **PHP**: Follow **PSR-12**.
+    - **TypeScript/JavaScript**: Follow **ESLint + Prettier** rules.
+- **Naming**: Use clear, descriptive, and English names for all variables, methods, and classes. Avoid generic names like `data` or `item`.
+- **AI-Friendliness**: Write clear comments explaining the _intent_ behind complex code blocks to guide AI-assisted development.

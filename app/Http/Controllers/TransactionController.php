@@ -8,6 +8,7 @@ use App\Models\Category;
 use App\Models\Client;
 use App\Models\Member;
 use App\Models\Transaction;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
@@ -16,13 +17,24 @@ class TransactionController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
+        $request->validate([
+            'date' => ['nullable', 'date_format:Y-m-d'],
+        ]);
+
         return Inertia::render('transactions/index', [
-            'transactions' => Transaction::with('user', 'client')->latest()->paginate(15),
+            'transactions' => Transaction::with('user', 'client')
+                ->when($request->input('date'), function ($query, $date) {
+                    $query->whereDate('transaction_date', $date);
+                })
+                ->latest()
+                ->paginate(15)
+                ->withQueryString(),
             'categories' => Category::orderBy('name')->get(['id', 'name', 'type']),
             'members' => Member::orderBy('name')->get(['id', 'name']),
             'clients' => Client::orderBy('name')->get(['id', 'name']),
+            'filters' => $request->only(['date']),
         ]);
     }
 
